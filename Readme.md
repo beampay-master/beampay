@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="mobileapp/assets/logo.png" alt="BeamPay Logo" width="200" />
+  <img src="mobileapp/assets/beamlogo.jpeg" alt="BeamPay Logo" width="200" />
 </p>
 
 <h1 align="center">BeamPay ⚡</h1>
