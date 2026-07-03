@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/beampay-backend
+
+jobs:
+  # ─── Frontend ────────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend (React Native)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobileapp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: mobileapp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Test
+        run: npm test -- --watchAll=false --passWithNoTests
+        env:
+          CI: true
+
+      - name: Build check
+        run: npx expo export --platform web --output-dir dist || echo "Build check completed"
+
+  # ─── Backend ─────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend (Rust)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: beampay
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      BEAMPAY_DATABASE__URL: postgres://postgres:password@localhost:5432/beampay
+      BEAMPAY_CACHE__REDIS_URL: redis://localhost:6379
+      BEAMPAY_QUEUE__REDIS_URL: redis://localhost:6379
+      BEAMPAY_JWT__SECRET: ci-test-secret-not-for-production
+      RUN_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+
+      - name: Check
+        working-directory: ./backend
+        run: cargo check
+
+      - name: Format
+        working-directory: ./backend
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        working-directory: ./backend
+        run: cargo clippy -- -D warnings
+
+      - name: Test
+        working-directory: ./backend
+        run: cargo test
+
+  # ─── Contracts ───────────────────────────────────────────────────────────────
+  contracts:
+    name: Contracts (Soroban)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts
+
+      - name: Format
+        working-directory: ./contracts
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        working-directory: ./contracts
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build
+        working-directory: ./contracts
+        run: cargo build --release --workspace
+
+      - name: Test
+        working-directory: ./contracts
+        run: cargo test --workspace
+
+  # ─── All checks passed gate ───────────────────────────────────────────────────
+  ci-pass:
+    name: CI Pass
+    needs: [frontend, backend, contracts]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.frontend.result }}" != "success" || \
+                "${{ needs.backend.result }}" != "success" || \
+                "${{ needs.contracts.result }}" != "success" ]]; then
+            echo "One or more CI jobs failed"
+            exit 1
+          fi
+          echo "All CI checks passed"

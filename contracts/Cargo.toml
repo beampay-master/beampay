@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/social_payment",
+    "contracts/user_registry",
+    "contracts/naira_token",
+    "contracts/social_graph",
+    "contracts/allbridge_receiver",
+    "contracts/yield_vault",
+]
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

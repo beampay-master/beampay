@@ -1,0 +1,114 @@
+version: '3.8'
+
+# Shared environment block for application services.
+# Both backend and yield-scheduler inherit these; override per-service as needed.
+x-app-env: &app-env
+  DATABASE_URL: postgres://postgres:password@db:5432/beampay_dev
+  REDIS_URL: redis://redis:6379
+  STELLAR_RPC_URL: http://soroban-rpc:8000
+  ALLBRIDGE_API_URL: https://core-api.allbridge.io
+  JWT_SECRET: dev-jwt-secret-change-in-production
+  RUST_LOG: info
+
+services:
+  # --- PostgreSQL Database ---
+  db:
+    image: postgres:15-alpine
+    container_name: beampay-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: beampay_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d beampay_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- Redis Cache ---
+  redis:
+    image: redis:7-alpine
+    container_name: beampay-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- Stellar / Soroban RPC Node ---
+  soroban-rpc:
+    image: stellar/quickstart:latest
+    container_name: beampay-soroban-rpc
+    restart: unless-stopped
+    # Running local standalone sandbox environment
+    command:
+      - --local
+      - --enable-soroban-rpc
+    ports:
+      - "8000:8000"
+    volumes:
+      - soroban_data:/opt/stellar
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  # --- Rust API Backend ---
+  backend:
+    image: ghcr.io/fracverse/beampay-backend:latest
+    container_name: beampay-backend
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      soroban-rpc:
+        condition: service_healthy
+
+  # --- Yield Scheduler (background sweep + yield calculation cron) ---
+  # Runs the same binary as `backend` in scheduler-only mode.
+  # ROLE=scheduler is the hook for the binary to suppress the HTTP listener
+  # and run only the tokio-spawned cron workers (sweep_worker, notifications).
+  # Set SWEEP_POLL_INTERVAL_SECS / YIELD_REPORT_*_INTERVAL_SECS to tune cadence.
+  yield-scheduler:
+    image: ghcr.io/fracverse/beampay-backend:latest
+    container_name: beampay-yield-scheduler
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      ROLE: scheduler
+      SWEEP_POLL_INTERVAL_SECS: "300"
+      SWEEP_MIN_IDLE_AMOUNT: "100000"
+      YIELD_REPORT_DAILY_INTERVAL_SECS: "86400"
+      YIELD_REPORT_WEEKLY_INTERVAL_SECS: "604800"
+      YIELD_REPORT_THRESHOLD: "1000"
+      # EXPO_ACCESS_TOKEN: ""  # set via .env or secret manager in production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  soroban_data:
+    driver: local
