@@ -1,4 +1,21 @@
-# BeamPay ⚡
+<p align="center">
+  <img src="mobileapp/assets/logo.png" alt="BeamPay Logo" width="200" />
+</p>
+
+<h1 align="center">BeamPay ⚡</h1>
+
+<p align="center">
+  <em>Pay friends. Share moments. Powered by Stellar.</em>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
+  <img src="https://img.shields.io/badge/built%20with-Stellar-blue" alt="Built with Stellar" />
+  <img src="https://img.shields.io/badge/platform-iOS%20%7C%20Android%20%7C%20Web-lightgrey" alt="Platform" />
+  <img src="https://img.shields.io/badge/expo-54-black" alt="Expo 54" />
+</p>
+
+---
 
 A social payments platform built on the Stellar blockchain. BeamPay transforms financial transactions into social interactions — users can pay friends, add memos, like and comment on payments, and share activity publicly or privately, similar to Venmo or Cash App.
 
@@ -287,6 +304,12 @@ GitHub Actions workflows in `.github/workflows/`:
 2. Follow the existing code style (Rust: `cargo fmt`, TypeScript: `npm run format`)
 3. Ensure all checks pass: `cargo test`, `npm test`, `npm run lint`
 4. Open a pull request with a clear description of the change
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
