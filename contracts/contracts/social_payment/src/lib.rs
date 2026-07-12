@@ -516,7 +516,7 @@ mod tests {
         let token_client = soroban_sdk::token::Client::new(&env, &token);
         let receiver2 = Address::generate(&env);
 
-        let payments = vec![
+        let payments = soroban_sdk::vec![
             &env,
             Payment {
                 token: token.clone(),
@@ -548,7 +548,7 @@ mod tests {
         let token = mint_token(&env, &admin, &sender, 1_000);
         client.set_naira_token(&token);
 
-        let payments: Vec<Payment> = vec![&env];
+        let payments: Vec<Payment> = soroban_sdk::vec![&env];
         client.batch_pay(&sender, &payments);
     }
 
