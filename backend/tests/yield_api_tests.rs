@@ -150,7 +150,9 @@ async fn test_yield_balance_history_toggle() {
 
     // auto_earn_enabled default comes from `users.auto_earn_enabled`.
     assert_eq!(
-        body.get("auto_earn_enabled").and_then(|v| v.as_bool()).unwrap_or(true),
+        body.get("auto_earn_enabled")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(true),
         false,
         "auto_earn_enabled should default to false"
     );
@@ -206,11 +208,8 @@ async fn test_yield_balance_history_toggle() {
     }
 
     // 3) GET /api/yield/history
-    let (hist_status, hist_body) = response_json(
-        &router,
-        get_req("/history?limit=10&offset=0", Some(&token)),
-    )
-    .await;
+    let (hist_status, hist_body) =
+        response_json(&router, get_req("/history?limit=10&offset=0", Some(&token))).await;
     assert_eq!(hist_status, StatusCode::OK);
 
     let items = hist_body

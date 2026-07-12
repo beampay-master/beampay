@@ -1,6 +1,6 @@
 #![no_std]
 #![allow(dead_code, unused_variables, unused_imports, unexpected_cfgs)]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, String};
 
 #[contract]
 pub struct UserRegistryContract;
@@ -75,35 +75,22 @@ impl UserRegistryContract {
     pub fn unregister_user(env: Env, user: Address) {
         user.require_auth();
 
-        let address_key = String::from_str(&env, ADDRESS_TO_USERNAME);
-        let username_key = String::from_str(&env, USERNAME_TO_ADDRESS);
+        let user_key = DataKey::User(user.clone());
 
-        let mut address_to_username: Map<Address, String> = env
+        // Look up the username before removing
+        let username: String = env
             .storage()
             .persistent()
-            .get(&address_key)
-            .unwrap_or(Map::new(&env));
-
-        let username = address_to_username
-            .get(user.clone())
+            .get(&user_key)
             .unwrap_or_else(|| panic!("address not registered"));
 
-        let mut username_to_address: Map<String, Address> = env
-            .storage()
-            .persistent()
-            .get(&username_key)
-            .unwrap_or(Map::new(&env));
+        let username_key = DataKey::Username(username);
 
-        address_to_username.remove(user.clone());
-        username_to_address.remove(username);
+        // Remove both direction mappings
+        env.storage().persistent().remove(&user_key);
+        env.storage().persistent().remove(&username_key);
 
-        env.storage()
-            .persistent()
-            .set(&address_key, &address_to_username);
-        env.storage()
-            .persistent()
-            .set(&username_key, &username_to_address);
-
+        // Remove avatar if set
         env.storage().persistent().remove(&DataKey::Avatar(user));
     }
 }
