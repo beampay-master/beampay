@@ -20,19 +20,32 @@ jobs:
           cache: npm
           cache-dependency-path: mobileapp/package-lock.json
 
-      - name: Install AppleSimulatorUtils
-        run: |
-          brew tap wix/brew
-          HOMEBREW_NO_INSTALL_FROM_API=1 brew install wix/brew/applesimutils
-
       - name: Install dependencies
         working-directory: ./mobileapp
         run: npm ci
 
+      - name: Install AppleSimulatorUtils
+        run: |
+          brew tap wix/brew
+          HOMEBREW_NO_INSTALL_FROM_API=1 brew install wix/brew/applesimutils || true
+
+      - name: Check iOS workspace exists
+        id: check_workspace
+        run: |
+          if [ -d "mobileapp/ios/BeamPay.xcworkspace" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ iOS workspace not found — skipping Detox build/test"
+            echo "Run 'cd mobileapp && npx expo prebuild' to generate the iOS project"
+          fi
+
       - name: Detox Build
+        if: steps.check_workspace.outputs.exists == 'true'
         working-directory: ./mobileapp
         run: npx detox build -c ios.sim.debug
 
       - name: Detox Test
+        if: steps.check_workspace.outputs.exists == 'true'
         working-directory: ./mobileapp
         run: npx detox test -c ios.sim.debug --cleanup --headless
