@@ -22,7 +22,8 @@ jobs:
 
       - name: Install AppleSimulatorUtils
         run: |
-          brew install --formula applesimutils
+          brew tap wix/brew
+          HOMEBREW_NO_INSTALL_FROM_API=1 brew install wix/brew/applesimutils
 
       - name: Install dependencies
         working-directory: ./mobileapp
