@@ -22,7 +22,6 @@ jobs:
 
       - name: Install AppleSimulatorUtils
         run: |
-          brew update --preinstall
           brew install --formula applesimutils
 
       - name: Install dependencies
