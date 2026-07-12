@@ -60,5 +60,11 @@ jobs:
       - name: Build
         run: cargo build
 
+      - name: Run migrations
+        run: |
+          for f in migrations/*.sql; do
+            psql "$DATABASE_URL" -f "$f" || true
+          done
+
       - name: Test
         run: cargo test
