@@ -85,7 +85,6 @@ pub struct WithdrawQuoteRequest {
     pub destination_address: String,
 }
 
-
 pub struct BridgeStatusResponse {
     pub source_tx_hash: String,
     pub source_chain: String,
