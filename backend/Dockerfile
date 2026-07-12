@@ -1,18 +1,28 @@
-FROM rust:1.78-alpine AS builder
-
-RUN apk add --no-cache musl-dev pkgconfig openssl-dev
-
+FROM rust:1.81-slim-bookworm AS chef
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config libssl-dev ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN cargo install cargo-chef --locked
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
-# Pre-fetch dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs && cargo build --release 2>/dev/null; rm -rf src
+# ── Dependency planner ────────────────────────────────────────────────────────
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
 
-COPY src ./src
-RUN touch src/main.rs && cargo build --release
+# ── Builder ───────────────────────────────────────────────────────────────────
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+# Cache dependencies — this layer is only re-run when Cargo.toml/Cargo.lock change
+RUN cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN cargo build --release --bin beampay-backend
 
-FROM alpine:3.19
-RUN apk add --no-cache ca-certificates libgcc
+# ── Runtime ───────────────────────────────────────────────────────────────────
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates libssl3 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=builder /app/target/release/beampay-backend .
