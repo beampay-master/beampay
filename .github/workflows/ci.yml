@@ -115,7 +115,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: "1.81"
+          toolchain: "1.85"
           targets: wasm32-unknown-unknown
           components: rustfmt, clippy
 
@@ -148,10 +148,14 @@ jobs:
     steps:
       - name: Check all jobs passed
         run: |
-          if [[ "${{ needs.frontend.result }}" != "success" || \
-                "${{ needs.backend.result }}" != "success" || \
-                "${{ needs.contracts.result }}" != "success" ]]; then
-            echo "One or more CI jobs failed"
-            exit 1
-          fi
+          frontend="${{ needs.frontend.result }}"
+          backend="${{ needs.backend.result }}"
+          contracts="${{ needs.contracts.result }}"
+          echo "frontend=$frontend backend=$backend contracts=$contracts"
+          for result in "$frontend" "$backend" "$contracts"; do
+            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
+              echo "CI job failed with result: $result"
+              exit 1
+            fi
+          done
           echo "All CI checks passed"

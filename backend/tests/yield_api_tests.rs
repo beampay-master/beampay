@@ -217,7 +217,10 @@ async fn test_yield_balance_history_toggle() {
         .get("items")
         .and_then(|v| v.as_array())
         .expect("history items must be array");
-    assert!(!items.is_empty(), "expected at least one yield history item");
+    assert!(
+        !items.is_empty(),
+        "expected at least one yield history item"
+    );
 
     // Validate item fields exist.
     let first = &items[0];

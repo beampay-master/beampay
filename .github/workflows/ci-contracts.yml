@@ -18,10 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust 1.81 with wasm32 target
+      - name: Install Rust 1.85 with wasm32 target
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: "1.81"
+          toolchain: "1.85"
           targets: wasm32-unknown-unknown
           components: rustfmt, clippy
 
