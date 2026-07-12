@@ -18,10 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust stable with wasm32
+      - name: Install Rust 1.85 with wasm32 target
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: "1.85"
           targets: wasm32-unknown-unknown
           components: rustfmt, clippy
 
@@ -36,8 +36,8 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Run Tests
-        run: cargo test --all-features
+      - name: Test
+        run: cargo test --workspace
 
       - name: Build WASM
-        run: cargo build --target wasm32-unknown-unknown --release
+        run: cargo build --target wasm32-unknown-unknown --release --workspace
