@@ -302,5 +302,5 @@ async fn test_yield_balance_history_toggle() {
         .ok();
 
     // Avoid unused import warning.
-    let _ = AuthUser;
+    let _ = std::mem::size_of::<AuthUser>();
 }
