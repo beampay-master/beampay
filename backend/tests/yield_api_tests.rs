@@ -133,10 +133,7 @@ async fn test_yield_balance_history_toggle() {
 
     // This address string is what the AuthUser extractor maps from JWT `sub`.
     // It may not be a real Stellar address; the extractor only uses it as an opaque key.
-    let address = format!(
-        "GTESTYIELDUSER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
+    let address = format!("GTESTYIELDUSER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
     let user_id = seed_user(&pool, &address).await;
 
     // Token mapping:
