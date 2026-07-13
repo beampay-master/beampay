@@ -1,4 +1,4 @@
-//! Integration tests for feed pagination and privacy logic.
+﻿//! Integration tests for feed pagination and privacy logic.
 //!
 //! These tests build the real Axum router and call it via
 //! `tower::ServiceExt::oneshot`, so no TCP socket is needed.
@@ -146,11 +146,11 @@ async fn test_public_feed_pagination() {
     // Use stable, collision-resistant address suffixes based on a random run id
     let run = Uuid::new_v4().to_string().replace('-', "")[..8].to_string();
     let sender_addr = format!(
-        "GSENDER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "GSENDER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         run
     );
     let receiver_addr = format!(
-        "GRECEIVER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "GRECEIVER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         run
     );
 
@@ -224,11 +224,11 @@ async fn test_friends_feed_privacy() {
 
     let run = Uuid::new_v4().to_string().replace('-', "")[..8].to_string();
     let addr_a = format!(
-        "GUSERA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "GUSERA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         run
     );
     let addr_b = format!(
-        "GUSERB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "GUSERB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         run
     );
 
@@ -311,15 +311,15 @@ async fn test_private_feed_isolation() {
 
     let run = Uuid::new_v4().to_string().replace('-', "")[..8].to_string();
     let addr_a = format!(
-        "GISOA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "GISOA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         run
     );
     let addr_b = format!(
-        "GISOB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "GISOB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         run
     );
     let addr_c = format!(
-        "GISOC{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "GISOC{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         run
     );
 
