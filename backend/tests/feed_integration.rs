@@ -41,8 +41,14 @@ fn feed_router(pool: PgPool) -> Router {
     // (they are pub inside the crate).
     Router::new()
         .route("/public", get(beampay_backend::api::feed::get_public_feed))
-        .route("/friends", get(beampay_backend::api::feed::get_friends_feed))
-        .route("/private", get(beampay_backend::api::feed::get_private_feed))
+        .route(
+            "/friends",
+            get(beampay_backend::api::feed::get_friends_feed),
+        )
+        .route(
+            "/private",
+            get(beampay_backend::api::feed::get_private_feed),
+        )
         .with_state(pool)
 }
 
@@ -139,14 +145,8 @@ async fn test_public_feed_pagination() {
 
     // Use stable, collision-resistant address suffixes based on a random run id
     let run = Uuid::new_v4().to_string().replace('-', "")[..8].to_string();
-    let sender_addr = format!(
-        "GSENDER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
-    let receiver_addr = format!(
-        "GRECEIVER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
+    let sender_addr = format!("GSENDER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
+    let receiver_addr = format!("GRECEIVER{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
 
     let sender_id = seed_user(&pool, &format!("sender_{run}"), &sender_addr).await;
     let receiver_id = seed_user(&pool, &format!("receiver_{run}"), &receiver_addr).await;
@@ -217,14 +217,8 @@ async fn test_friends_feed_privacy() {
     let pool = test_pool().await;
 
     let run = Uuid::new_v4().to_string().replace('-', "")[..8].to_string();
-    let addr_a = format!(
-        "GUSERA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
-    let addr_b = format!(
-        "GUSERB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
+    let addr_a = format!("GUSERA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
+    let addr_b = format!("GUSERB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
 
     let user_a = seed_user(&pool, &format!("user_a_{run}"), &addr_a).await;
     let user_b = seed_user(&pool, &format!("user_b_{run}"), &addr_b).await;
@@ -304,18 +298,9 @@ async fn test_private_feed_isolation() {
     let pool = test_pool().await;
 
     let run = Uuid::new_v4().to_string().replace('-', "")[..8].to_string();
-    let addr_a = format!(
-        "GISOA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
-    let addr_b = format!(
-        "GISOB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
-    let addr_c = format!(
-        "GISOC{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        run
-    );
+    let addr_a = format!("GISOA{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
+    let addr_b = format!("GISOB{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
+    let addr_c = format!("GISOC{}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", run);
 
     let user_a = seed_user(&pool, &format!("iso_a_{run}"), &addr_a).await;
     let user_b = seed_user(&pool, &format!("iso_b_{run}"), &addr_b).await;

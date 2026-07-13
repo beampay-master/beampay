@@ -85,7 +85,7 @@ pub struct WithdrawQuoteRequest {
     pub destination_address: String,
 }
 
-
+#[derive(Serialize)]
 pub struct BridgeStatusResponse {
     pub source_tx_hash: String,
     pub source_chain: String,
