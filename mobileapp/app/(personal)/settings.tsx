@@ -129,6 +129,7 @@ export default function SettingsScreen() {
             }}>
               <Ionicons name="copy-outline" size={18} color={COLORS.primary} />
             </TouchableOpacity>
+            </TouchableOpacity>
           </View>
         </View>
 
