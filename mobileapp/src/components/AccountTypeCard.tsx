@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: "#E0E0E0",
-    borderRadius: 100,
+    borderRadius: 16,
     minHeight: 100,
   },
   cardSelected: {

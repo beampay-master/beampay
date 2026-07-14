@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,8 +9,8 @@ import {
   Platform,
   UIManager,
   Share,
-  Clipboard,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, Stack } from "expo-router";
@@ -18,10 +18,10 @@ import QRCode from "react-native-qrcode-svg";
 import { COLORS } from "../src/constants/colors";
 import { Button } from "../src/components/Button";
 import { AccountTypeCard } from "../src/components/AccountTypeCard";
-import { buildSep0007PayUri } from "../src/utils/sep0007";
+import { getLocalKeypair } from "../src/services/stellarWallet";
 
+import { buildSep0007PayUri } from "../src/utils/sep0007";
 import BeamPayIcon from "../assets/icon-4.svg";
-import WalletIcon from "../assets/wallet.svg";
 
 if (
   Platform.OS === "android" &&
@@ -30,17 +30,22 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+import WalletIcon from "../assets/wallet.svg";
+
 export default function ReceiveScreen() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [receiveType, setReceiveType] = useState<"BEAMPAY" | "external" | null>(
-    null
-  );
+  const [receiveType, setReceiveType] = useState<"BEAMPAY" | "external" | null>(null);
+  const [walletAddress, setWalletAddress] = useState("Loading...");
 
   const blinkId = "ejembiii.beampay";
-  // Real Stellar G-address (placeholder — replace with actual wallet address from auth context)
-  const walletAddress =
-    "GABC1234EXAMPLESTELLARADDRESSXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+
+  useEffect(() => {
+    (async () => {
+      const kp = await getLocalKeypair();
+      if (kp) setWalletAddress(kp.publicKey());
+    })();
+  }, []);
 
   // Build SEP-0007 URI for the QR code so any SEP-0007 compatible wallet can scan it
   const sep0007Uri = buildSep0007PayUri({ destination: walletAddress });
@@ -69,12 +74,9 @@ export default function ReceiveScreen() {
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     const copyValue = receiveType === "BEAMPAY" ? blinkId : walletAddress;
-    Clipboard.setString(copyValue);
-    if (typeof global !== "undefined" && global.toast) {
-      global.toast.success("Address copied to clipboard");
-    }
+    await Clipboard.setStringAsync(copyValue);
   };
 
   const renderStep0 = () => (
