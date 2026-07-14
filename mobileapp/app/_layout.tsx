@@ -16,6 +16,7 @@ import { Anton_400Regular } from "@expo-google-fonts/anton";
 import {
   Outfit_400Regular,
   Outfit_500Medium,
+  Outfit_600SemiBold,
   Outfit_700Bold,
 } from "@expo-google-fonts/outfit";
 import { ErrorBoundary } from "../src/components/ErrorBoundary";
@@ -148,6 +149,7 @@ export default function Layout() {
     Anton_400Regular,
     Outfit_400Regular,
     Outfit_500Medium,
+    Outfit_600SemiBold,
     Outfit_700Bold,
   });
 

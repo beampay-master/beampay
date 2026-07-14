@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,12 +6,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../src/constants/colors";
 import { useRouter } from "expo-router";
 import { useNotificationPreferences } from "../../src/hooks/useNotificationPreferences";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getLocalKeypair } from "../../src/services/stellarWallet";
 
 const SettingsItem = ({
   icon,
@@ -53,7 +55,9 @@ const SettingsItem = ({
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const [biometrics, setBiometrics] = useState(true);
+  const [biometrics, setBiometrics] = useState(false);
+  const [username, setUsername] = useState("BeamPay User");
+  const [walletAddress, setWalletAddress] = useState("");
   const {
     enabled,
     permissionStatus,
@@ -61,6 +65,33 @@ export default function SettingsScreen() {
     toggleNotifications,
     openSystemSettings,
   } = useNotificationPreferences();
+
+  // Load persisted biometrics preference and real wallet address
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem("biometrics_enabled");
+        if (stored !== null) setBiometrics(stored === "true");
+
+        const profile = await AsyncStorage.getItem("cached_profile");
+        if (profile) {
+          const p = JSON.parse(profile);
+          if (p.username) setUsername(p.username);
+        }
+
+        const kp = await getLocalKeypair();
+        if (kp) {
+          const addr = kp.publicKey();
+          setWalletAddress(`${addr.slice(0, 6)}…${addr.slice(-6)}`);
+        }
+      } catch { /* ignore */ }
+    })();
+  }, []);
+
+  const handleBiometricsToggle = async (value: boolean) => {
+    setBiometrics(value);
+    await AsyncStorage.setItem("biometrics_enabled", String(value));
+  };
 
   const notificationSublabel = loading
     ? "Loading notification preferences..."
@@ -88,11 +119,18 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileCard}>
-          <Text style={styles.profileName}>Ejembiii.BeamPay</Text>
+          <Text style={styles.profileName}>{username}</Text>
           <View style={styles.addressRow}>
-            <Text style={styles.addressText}>0x4A7d5cBe16...da79bB2cF9a1B</Text>
-            <TouchableOpacity>
+            <Text style={styles.addressText}>{walletAddress || "No wallet connected"}</Text>
+            <TouchableOpacity onPress={async () => {
+              const kp = await getLocalKeypair();
+              if (kp) {
+                const { setStringAsync } = await import("expo-clipboard");
+                await setStringAsync(kp.publicKey());
+              }
+            }}>
               <Ionicons name="copy-outline" size={18} color={COLORS.primary} />
+            </TouchableOpacity>
             </TouchableOpacity>
           </View>
         </View>
@@ -128,7 +166,7 @@ export default function SettingsScreen() {
             sublabel="Use Face ID / Fingerprint"
             hasToggle={true}
             value={biometrics}
-            onToggle={setBiometrics}
+            onToggle={handleBiometricsToggle}
           />
           <SettingsItem
             icon="language-outline"

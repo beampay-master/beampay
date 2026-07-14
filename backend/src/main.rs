@@ -318,12 +318,11 @@ async fn health_check(State(state): State<HealthState>) -> impl IntoResponse {
 /// Basic Postgres connectivity: a single round-trip to the DB pool.
 async fn probe_database(pool: &sqlx::PgPool) -> DbHealth {
     let start = Instant::now();
-    match sqlx::query_scalar::<_, i64>("SELECT 1")
+    match sqlx::query_scalar::<_, i32>("SELECT 1")
         .fetch_one(pool)
         .await
     {
-        Ok(_) => DbHealth {
-            status: "ok",
+        Ok(_) => DbHealth {            status: "ok",
             latency_ms: start.elapsed().as_millis() as u64,
             error: None,
         },

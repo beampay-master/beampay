@@ -45,7 +45,7 @@ export default function YieldHomeCard({
           testID="auto-yield-switch"
           value={autoYieldEnabled}
           onValueChange={onToggleAutoYield}
-          trackColor={{ false: "#E2E8F0", true: "#34D399" }}
+          trackColor={{ false: "#E2E8F0", true: COLORS.yieldAccent }}
           thumbColor={COLORS.white}
         />
       </View>
@@ -55,7 +55,7 @@ export default function YieldHomeCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#0F3D2E",
+    backgroundColor: COLORS.yieldBg,
     borderRadius: 22,
     paddingVertical: 18,
     paddingHorizontal: 18,
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontFamily: "Outfit_500Medium",
-    color: "#9FD9B5",
+    color: COLORS.yieldLabel,
     marginBottom: 6,
   },
   amount: {
@@ -86,13 +86,13 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: "#34D399",
+    backgroundColor: COLORS.yieldAccent,
     marginRight: 7,
   },
   statusText: {
     fontSize: 12,
     fontFamily: "Outfit_500Medium",
-    color: "#BFE9CF",
+    color: COLORS.yieldStatus,
   },
   toggleWrap: {
     alignItems: "center",
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   toggleLabel: {
     fontSize: 11,
     fontFamily: "Outfit_500Medium",
-    color: "#9FD9B5",
+    color: COLORS.yieldLabel,
     marginBottom: 6,
   },
 });

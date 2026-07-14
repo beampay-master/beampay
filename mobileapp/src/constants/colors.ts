@@ -8,4 +8,9 @@ export const COLORS = {
   darkGray: "#333333",
   text: "#0D1B40",      // Navy for dark text
   background: "#F4F6FF", // Soft blue-white
+  // Yield / earnings card palette
+  yieldBg: "#0F3D2E",       // Dark green card background
+  yieldAccent: "#34D399",   // Emerald green — status dot, switch track
+  yieldLabel: "#9FD9B5",    // Muted green — label text
+  yieldStatus: "#BFE9CF",   // Light green — status text
 };

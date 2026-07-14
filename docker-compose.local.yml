@@ -1,0 +1,60 @@
+version: '3.8'
+
+x-app-env: &app-env
+  DATABASE_URL: postgres://postgres:password@db:5432/beampay_dev
+  REDIS_URL: redis://redis:6379
+  STELLAR_RPC_URL: https://soroban-testnet.stellar.org
+  ALLBRIDGE_API_URL: https://core-api.allbridge.io
+  JWT_SECRET: dev-jwt-secret-change-in-production
+  RUST_LOG: info
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: beampay-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: beampay_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d beampay_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: beampay-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: beampay-backend
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local
