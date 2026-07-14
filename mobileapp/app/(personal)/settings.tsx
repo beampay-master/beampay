@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { useNotificationPreferences } from "../../src/hooks/useNotificationPreferences";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getLocalKeypair } from "../../src/services/stellarWallet";
+import * as Clipboard from "expo-clipboard";
 
 const SettingsItem = ({
   icon,
@@ -124,13 +125,9 @@ export default function SettingsScreen() {
             <Text style={styles.addressText}>{walletAddress || "No wallet connected"}</Text>
             <TouchableOpacity onPress={async () => {
               const kp = await getLocalKeypair();
-              if (kp) {
-                const { setStringAsync } = await import("expo-clipboard");
-                await setStringAsync(kp.publicKey());
-              }
+              if (kp) await Clipboard.setStringAsync(kp.publicKey());
             }}>
               <Ionicons name="copy-outline" size={18} color={COLORS.primary} />
-            </TouchableOpacity>
             </TouchableOpacity>
           </View>
         </View>
